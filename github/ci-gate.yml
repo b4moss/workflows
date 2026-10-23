@@ -1,0 +1,69 @@
+name: Reusable CI gate
+
+on:
+  workflow_call:
+    inputs:
+      working_directory:
+        type: string
+        required: false
+        default: "."
+
+jobs:
+  gate:
+    name: CI gate
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{ inputs.working_directory }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Skip if identical tree already passed on base
+        id: skip
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          # Same-SHA skip: if HEAD tree equals base tree, nothing to lint/test.
+          BASE_REF="${{ github.base_ref || github.event.repository.default_branch }}"
+          if [ -z "${BASE_REF}" ]; then
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          git fetch origin "$BASE_REF" --depth=1 || true
+          if git rev-parse "origin/${BASE_REF}^{tree}" >/dev/null 2>&1; then
+            HEAD_TREE=$(git rev-parse 'HEAD^{tree}')
+            BASE_TREE=$(git rev-parse "origin/${BASE_REF}^{tree}")
+            if [ "$HEAD_TREE" = "$BASE_TREE" ]; then
+              echo "Identical tree to origin/${BASE_REF}; skipping gate."
+              echo "skip=true" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+          fi
+          echo "skip=false" >> "$GITHUB_OUTPUT"
+
+      - name: Lint via convention script
+        if: steps.skip.outputs.skip != 'true'
+        run: |
+          set -euo pipefail
+          if [ -x scripts/ci/lint.sh ]; then
+            ./scripts/ci/lint.sh
+          elif [ -f scripts/ci/lint.sh ]; then
+            bash scripts/ci/lint.sh
+          else
+            echo "No scripts/ci/lint.sh — lint no-op."
+          fi
+
+      - name: Test via convention script (optional)
+        if: steps.skip.outputs.skip != 'true'
+        run: |
+          set -euo pipefail
+          if [ -x scripts/ci/test.sh ]; then
+            ./scripts/ci/test.sh
+          elif [ -f scripts/ci/test.sh ]; then
+            bash scripts/ci/test.sh
+          else
+            echo "No scripts/ci/test.sh — test no-op."
+          fi

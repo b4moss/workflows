@@ -1,0 +1,14 @@
+# Drop into a consumer repo as .gitea/workflows/ci.yaml
+# Requires a same-instance mirror, e.g. b4m-inner/workflows (not configured yet).
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main, develop]
+
+jobs:
+  lint:
+    uses: b4m-inner/workflows/.gitea/workflows/lint.yaml@v1
+  gate:
+    uses: b4m-inner/workflows/.gitea/workflows/ci-gate.yaml@v1

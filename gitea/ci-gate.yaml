@@ -1,0 +1,48 @@
+name: Reusable CI gate
+
+on:
+  workflow_call:
+    inputs:
+      working_directory:
+        type: string
+        required: false
+        default: "."
+
+jobs:
+  gate:
+    name: CI gate
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{ inputs.working_directory }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Skip if identical tree already on default branch
+        id: skip
+        run: |
+          set -euo pipefail
+          DEFAULT_BRANCH="${GITHUB_BASE_REF:-main}"
+          git fetch origin "$DEFAULT_BRANCH" --depth=1 || true
+          if git rev-parse "origin/${DEFAULT_BRANCH}^{tree}" >/dev/null 2>&1; then
+            HEAD_TREE=$(git rev-parse 'HEAD^{tree}')
+            BASE_TREE=$(git rev-parse "origin/${DEFAULT_BRANCH}^{tree}")
+            if [ "$HEAD_TREE" = "$BASE_TREE" ]; then
+              echo "Identical tree; skipping gate."
+              echo "skip=true" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+          fi
+          echo "skip=false" >> "$GITHUB_OUTPUT"
+      - name: Lint via convention script
+        if: steps.skip.outputs.skip != 'true'
+        run: |
+          set -euo pipefail
+          if [ -x scripts/ci/lint.sh ]; then
+            ./scripts/ci/lint.sh
+          elif [ -f scripts/ci/lint.sh ]; then
+            bash scripts/ci/lint.sh
+          else
+            echo "No scripts/ci/lint.sh — lint no-op."
+          fi

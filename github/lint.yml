@@ -1,0 +1,47 @@
+name: Reusable lint
+
+on:
+  workflow_call:
+    inputs:
+      working_directory:
+        description: Repository subdirectory for lint
+        type: string
+        required: false
+        default: "."
+      python_version:
+        type: string
+        required: false
+        default: "3.12"
+      node_version:
+        type: string
+        required: false
+        default: "22"
+
+jobs:
+  Lint:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{ inputs.working_directory }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Python (optional)
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ inputs.python_version }}
+        continue-on-error: true
+      - name: Setup Node (optional)
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ inputs.node_version }}
+        continue-on-error: true
+      - name: Run scripts/ci/lint.sh
+        run: |
+          set -euo pipefail
+          if [ -x scripts/ci/lint.sh ]; then
+            ./scripts/ci/lint.sh
+          elif [ -f scripts/ci/lint.sh ]; then
+            bash scripts/ci/lint.sh
+          else
+            echo "No scripts/ci/lint.sh — lint no-op (convention)."
+          fi

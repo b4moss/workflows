@@ -1,0 +1,13 @@
+# Drop into a consumer repo as .github/workflows/ci.yml
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main, develop]
+
+jobs:
+  lint:
+    uses: b4moss/workflows/.github/workflows/lint.yml@v1
+  gate:
+    uses: b4moss/workflows/.github/workflows/ci-gate.yml@v1

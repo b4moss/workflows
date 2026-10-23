@@ -1,0 +1,30 @@
+name: Reusable CD stub
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        type: string
+        required: true
+      dry_run:
+        type: boolean
+        required: false
+        default: true
+
+jobs:
+  deploy:
+    name: CD
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Deploy hook
+        run: |
+          set -euo pipefail
+          echo "environment=${{ inputs.environment }} dry_run=${{ inputs.dry_run }}"
+          if [ -x scripts/ci/deploy.sh ]; then
+            DRY_RUN="${{ inputs.dry_run }}" ./scripts/ci/deploy.sh
+          elif [ -f scripts/ci/deploy.sh ]; then
+            DRY_RUN="${{ inputs.dry_run }}" bash scripts/ci/deploy.sh
+          else
+            echo "No scripts/ci/deploy.sh — CD stub no-op."
+          fi
