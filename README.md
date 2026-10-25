@@ -4,10 +4,11 @@
 
 | ディレクトリ | 用途 |
 |---|---|
-| [`github/`](github/) | GitHub Actions reusable workflows |
-| [`gitea/`](gitea/) | Gitea Actions 用（同一インスタンスから呼ぶ前提の YAML） |
+| [`.github/workflows/`](.github/workflows/) | GitHub Actions reusable workflows |
+| [`.gitea/workflows/`](.gitea/workflows/) | Gitea Actions reusable workflows（同一インスタンスのミラーから呼ぶ） |
+| [`github/`](github/) | GitHub 用テンプレ正本（`.github/workflows/` と同内容） |
 | [`examples/`](examples/) | 消費者リポへの呼び出し例・`scripts/ci/lint.sh` 規約サンプル |
-| [`docs/GITEA-MIRROR.md`](docs/GITEA-MIRROR.md) | Gitea ミラー案（**未設定**） |
+| [`docs/GITEA-MIRROR.md`](docs/GITEA-MIRROR.md) | Gitea ミラー案 |
 
 ## 使い方（GitHub）
 
@@ -19,10 +20,27 @@ jobs:
     uses: b4moss/workflows/.github/workflows/lint.yml@v1
   gate:
     uses: b4moss/workflows/.github/workflows/ci-gate.yml@v1
+  deploy:
+    uses: b4moss/workflows/.github/workflows/cd-stub.yml@v1
+    with:
+      environment: staging
 ```
 
-テンプレを GitHub の reusable として認識させるには、運用で `github/*.yml` を `.github/workflows/` に配置（または symlink / リリース時コピー）する必要がある。  
-**初回:** レビュー後に `.github/workflows/` へ同内容を置くフォロー PR を出す想定（本コミットは構成の正本を `github/` / `gitea/` に分離）。
+## 使い方（Gitea）
+
+社内ミラー `b4m-inner/workflows` から、消費者リポの `.gitea/workflows/ci.yaml`:
+
+```yaml
+jobs:
+  lint:
+    uses: b4m-inner/workflows/.gitea/workflows/lint.yaml@v1
+  gate:
+    uses: b4m-inner/workflows/.gitea/workflows/ci-gate.yaml@v1
+  deploy:
+    uses: b4m-inner/workflows/.gitea/workflows/cd-stub.yaml@v1
+    with:
+      environment: staging
+```
 
 ## 規約: 個別上書き
 
@@ -35,8 +53,8 @@ jobs:
 
 ## 版
 
-移動タグ `v1` を将来付与する（charter と同様、作成は PO 指示後）。それまでは `@main` カナリアのみ。
+移動タグ `v1`（および注釈付き `v1.0.0`）を付与する。カナリアは `@main` でも可。
 
 ## Gitea
 
-ミラーはまだ作らない。手順は [`docs/GITEA-MIRROR.md`](docs/GITEA-MIRROR.md)。
+ミラー手順は [`docs/GITEA-MIRROR.md`](docs/GITEA-MIRROR.md)。
