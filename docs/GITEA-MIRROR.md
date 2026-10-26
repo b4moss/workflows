@@ -1,4 +1,4 @@
-# Gitea ミラー案
+# Gitea ミラー
 
 ## 前提
 
@@ -12,16 +12,30 @@
 3. 消費者は同一インスタンス内のみ `uses: b4m-inner/workflows/.gitea/workflows/lint.yaml@v1` など
 4. テンプレ更新は GitHub で行い、ミラーが追従。`@v1` 移動前にカナリア 2〜3 リポ
 
-## ミラー作成手順（案）
+## 現状（作成済み）
 
-1. Gitea 管理 UI または API で `b4m-inner/workflows` を private/public いずれかで作成
-2. Migration / Mirror: source = `https://github.com/b4moss/workflows.git`、interval 例 1h
-3. Actions を有効化し、Cross-Repository Access を org 内に設定（private の場合）
+Gitea 側のプルミラー [`b4m-inner/workflows`](https://git.b4m.jp/b4m-inner/workflows) は作成済み。
+
+| 項目 | 値 |
+|---|---|
+| Visibility | public |
+| 種別 | pull mirror |
+| Source | `https://github.com/b4moss/workflows.git` |
+| 同期間隔 | 1h |
+| 作成日 | 2026-10-25 |
+
+public のため、Cross-Repository Access の設定は不要。
+
+### 作り直す場合の参考手順
+
+1. Gitea 管理 UI または API で `b4m-inner/workflows` を public で作成
+2. Migration / Mirror: source = `https://github.com/b4moss/workflows.git`、interval 1h
+3. Actions を有効化（public のため Cross-Repository Access の設定は不要）
 
 ## パス
 
 本リポは Gitea 用を `.gitea/workflows/`、GitHub 用を `.github/workflows/` に置いている。  
-ミラー後はそのまま `uses: b4m-inner/workflows/.gitea/workflows/<name>.yaml@v1` で呼べる。
+そのまま `uses: b4m-inner/workflows/.gitea/workflows/<name>.yaml@v1` で呼べる。
 
 呼び出し例（実ファイル名）:
 
