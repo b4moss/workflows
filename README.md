@@ -8,7 +8,7 @@
 | [`.gitea/workflows/`](.gitea/workflows/) | Gitea Actions reusable workflows（同一インスタンスのミラーから呼ぶ） |
 | [`github/`](github/) | GitHub 用テンプレ正本（`.github/workflows/` と同内容） |
 | [`examples/`](examples/) | 消費者リポへの呼び出し例・`scripts/ci/lint.sh` 規約サンプル |
-| [`docs/GITEA-MIRROR.md`](docs/GITEA-MIRROR.md) | Gitea ミラー案 |
+| [`docs/GITEA-MIRROR.md`](docs/GITEA-MIRROR.md) | Gitea ミラー（b4m-inner/workflows、作成済み） |
 
 ## 使い方（GitHub）
 
@@ -57,4 +57,4 @@ jobs:
 
 ## Gitea
 
-ミラー手順は [`docs/GITEA-MIRROR.md`](docs/GITEA-MIRROR.md)。
+ミラーの説明は [`docs/GITEA-MIRROR.md`](docs/GITEA-MIRROR.md)。
